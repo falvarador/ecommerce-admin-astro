@@ -1,4 +1,4 @@
-# Ecommerce Admin with Astro and React!
+# Ecommerce Admin with Astro and Preact!
 
 This is an ecommerce-admin project made with [Astro](https://astro.build/) 🚀 and ♥️.
 
@@ -9,9 +9,8 @@ This is an ecommerce-admin project made with [Astro](https://astro.build/) 🚀 
 3. [Clouflare] (https://workers.cloudflare.com/)
 4. [DaisyUI] (https://daisyui.com/)
 5. [LuciaAuth] (https://lucia-auth.com/)
-6. [RadixUI] (https://www.radix-ui.com/)
-7. [React] (https://react.dev/)
-8. [TailwindCSS] (https://tailwindcss.com/)
+6. [Preact] (https://preactjs.com/)
+7. [TailwindCSS] (https://tailwindcss.com/)
 
 ## Getting Started
 

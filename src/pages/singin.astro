@@ -1,0 +1,11 @@
+---
+import AuthLayout from "@/layouts/AuthLayout.astro";
+
+// import SingInForm from "@/features/auth/SingInForm.astro";
+import { SingInForm } from "@/features/auth/SingInForm";
+---
+
+<AuthLayout>
+  <SingInForm client:visible />
+  <!-- <SingInForm /> -->
+</AuthLayout>

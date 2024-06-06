@@ -1,0 +1,63 @@
+---
+import { actions, getActionProps, isInputError } from "astro:actions";
+
+const result = Astro.getActionResult(actions.singIn);
+const fieldError = isInputError(result?.error) ? result?.error.fields : {};
+
+export const prerender = false;
+---
+
+<form method="POST" class="mx-auto grid w-[350px] gap-6">
+  <input {...getActionProps(actions.singIn)} />
+  <fieldset class="grid gap-2 text-center">
+    <h1 class="text-3xl font-bold">Login</h1>
+    <p class="text-balance text-muted-foreground">
+      Enter your email below to login to your account
+    </p>
+  </fieldset>
+  <div class="grid gap-4">
+    <fieldset class="grid gap-2">
+      <label for="email">Email</label>
+      <input
+        autocomplete="off"
+        id="email"
+        type="email"
+        name="email"
+        placeholder="m@example.com"
+        class="input input-bordered w-full"
+        required
+      />
+      {fieldError.email && <p class="text-error text-sm">{fieldError.email}</p>}
+    </fieldset>
+    <fieldset class="grid gap-2">
+      <div class="flex items-center">
+        <label for="password">Password</label>
+        <a
+          href="/forgot-password"
+          class="ml-auto inline-block text-sm underline"
+        >
+          Remember Me?
+        </a>
+      </div>
+      <input
+        id="password"
+        type="password"
+        name="password"
+        placeholder="*********"
+        class="input input-bordered w-full"
+        required
+      />
+      {
+        fieldError.password && (
+          <p class="text-error text-sm">{fieldError.password}</p>
+        )
+      }
+    </fieldset>
+    <button type="submit" class="btn btn-primary w-full">Login</button>
+    <div class="mt-4 text-center text-sm">
+      <a href="/forgot-password" class="ml-auto inline-block text-sm underline">
+        Forgot your password?
+      </a>
+    </div>
+  </div>
+</form>
