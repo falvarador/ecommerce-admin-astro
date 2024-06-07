@@ -2,7 +2,7 @@ import { defineConfig } from "astro/config";
 
 import cloudflare from "@astrojs/cloudflare";
 import db from "@astrojs/db";
-import preact from "@astrojs/preact";
+import solidJs from "@astrojs/solid-js";
 import tailwind from "@astrojs/tailwind";
 
 // https://astro.build/config
@@ -11,6 +11,6 @@ export default defineConfig({
   experimental: {
     actions: true,
   },
-  integrations: [db(), preact(), tailwind()],
+  integrations: [db(), solidJs(), tailwind()],
   output: "server",
 });

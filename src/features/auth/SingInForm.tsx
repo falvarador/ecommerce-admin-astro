@@ -1,30 +1,54 @@
 import { actions, getActionProps, isInputError } from "astro:actions";
 
+import { createForm } from "@tanstack/solid-form";
+
+import { TextField } from "@/shared/components/ui/TextField";
+
 export function SingInForm() {
+  const form = createForm(() => ({
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+    onSubmit: async ({ value }) => {
+      // Do something with form data
+      console.log(value);
+
+      const formData = new FormData();
+      formData.append("email", value.email);
+      formData.append("password", value.password);
+
+      const { data, error } = await actions.singIn.safe(formData);
+
+      if (error && isInputError(error)) {
+        // fieldErrors = error.fields;
+        console.log(error.fields);
+      }
+    },
+  }));
+
   const handleBlur = (event: FocusEvent) => {
-    const value = (event.target as HTMLInputElement).value;
-    const name = (event.target as HTMLInputElement).name;
+    const target = event.target as HTMLInputElement;
+    const value = target.value;
+    const name = target.name;
 
     if (value === "") return;
 
     console.log(value, name);
+    target.setCustomValidity("Please enter your email.");
     // validate(singInForm, name as keyof SingInForm);
   };
 
-  const handleSubmit = async (event: Event) => {
-    const form = event.target as HTMLFormElement;
-    const formData = new FormData(form);
-
-    const { data, error } = await actions.singIn.safe(formData);
-
-    if (error && isInputError(error)) {
-      // fieldErrors = error.fields;
-      console.log(error.fields);
-    }
-  };
-
   return (
-    <form method="post" class="mx-auto grid w-[350px] gap-6">
+    <form
+      method="post"
+      class="mx-auto grid w-[350px] gap-6"
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        form.handleSubmit();
+      }}
+    >
       <input {...getActionProps(actions.singIn)} />
       <fieldset class="grid gap-2 text-center">
         <h1 class="text-3xl font-bold">Login</h1>
@@ -35,19 +59,23 @@ export function SingInForm() {
       <div class="grid gap-4">
         <fieldset class="grid gap-2">
           <label for="email">Email</label>
-          <input
-            autocomplete="off"
-            id="email"
-            type="email"
+          <form.Field
             name="email"
-            placeholder="m@example.com"
-            class="input input-bordered w-full"
-            required
-            onBlur={handleBlur}
+            children={(field) => (
+              <input
+                autocomplete="off"
+                class="input input-bordered w-full"
+                id="email"
+                name={field().name}
+                onBlur={field().handleBlur}
+                onInput={(e) => field().handleChange(e.target.value)}
+                placeholder="m@example.com"
+                required
+                type="email"
+                value={field().state.value}
+              />
+            )}
           />
-          {/* {fieldError.email && (
-          <p class="text-error text-sm">{fieldError.email}</p>
-        )} */}
         </fieldset>
         <fieldset class="grid gap-2">
           <label for="password">Password</label>
@@ -84,20 +112,20 @@ function SubmitButton() {
   return (
     <button
       type="submit"
-      className="btn btn-primary w-full"
+      class="btn btn-primary w-full"
       // disabled={singInForm.invalid || singInForm.submitting}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        className="mr-2 h-4 w-4"
+        class="mr-2 h-4 w-4"
         viewBox="0 0 24 24"
       >
         <g
           fill="none"
           stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
         >
           <path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
           <path d="m3 7l9 6l9-6" />
@@ -114,14 +142,14 @@ const SubmittingButton = () => {
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
-        className="mr-2 h-4 w-4 animate-spin"
+        class="mr-2 h-4 w-4 animate-spin"
       >
         <path
           fill="none"
           stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
           d="M12 6V3m4.25 4.75L18.4 5.6M18 12h3m-4.75 4.25l2.15 2.15M12 18v3m-4.25-4.75L5.6 18.4M6 12H3m4.75-4.25L5.6 5.6"
         />
       </svg>
