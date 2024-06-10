@@ -20,9 +20,13 @@ const { title, description } = Astro.props;
     <title>{title}</title>
     <ViewTransitions />
   </head>
-  <body>
+  <body data-js-enabled="false">
     <slot />
     <style is:global>
+      [data-js-enabled="false"] input:user-invalid {
+        @apply text-error input-error;
+      }
+
       .grid-desing {
         z-index: 0;
         opacity: 0.4;

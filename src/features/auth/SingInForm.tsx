@@ -1,52 +1,61 @@
-import { actions, getActionProps, isInputError } from "astro:actions";
+import { actions } from "astro:actions";
+import {
+  getActionProps,
+  isInputError,
+} from "astro/actions/runtime/virtual/shared.js";
 
-import { createForm } from "@tanstack/solid-form";
+import { createStore } from "solid-js/store";
+import { Show, onMount } from "solid-js";
 
 import { TextField } from "@/shared/components/ui/TextField";
 
+export type SingInForm = {
+  error: string;
+  isSubmitting: boolean;
+  isValid: boolean;
+};
+
+let fieldErrors: Record<string, string[]> = {};
+let singInFormElement!: HTMLFormElement;
+const [singInForm, setSingInForm] = createStore<SingInForm>({
+  error: "",
+  isSubmitting: false,
+  isValid: true,
+} as SingInForm);
+
 export function SingInForm() {
-  const form = createForm(() => ({
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-    onSubmit: async ({ value }) => {
-      // Do something with form data
-      console.log(value);
+  onMount(() => {
+    document.body.dataset.jsEnabled = "true";
+    singInFormElement.setAttribute("novalidate", "");
+  });
 
-      const formData = new FormData();
-      formData.append("email", value.email);
-      formData.append("password", value.password);
+  const handleSubmit = async (event: Event) => {
+    const form = event.target as HTMLFormElement;
+    const isFormValid = form.checkValidity();
 
+    if (!isFormValid) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      form.querySelector<HTMLInputElement>("input:invalid")?.focus();
+    } else {
+      const formData = new FormData(form);
       const { data, error } = await actions.singIn.safe(formData);
 
+      console.log("data: ", data, "error: ", error);
       if (error && isInputError(error)) {
-        // fieldErrors = error.fields;
-        console.log(error.fields);
+        fieldErrors = error.fields;
       }
-    },
-  }));
-
-  const handleBlur = (event: FocusEvent) => {
-    const target = event.target as HTMLInputElement;
-    const value = target.value;
-    const name = target.name;
-
-    if (value === "") return;
-
-    console.log(value, name);
-    target.setCustomValidity("Please enter your email.");
-    // validate(singInForm, name as keyof SingInForm);
+    }
   };
 
   return (
     <form
-      method="post"
       class="mx-auto grid w-[350px] gap-6"
-      onSubmit={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        form.handleSubmit();
+      method="post"
+      ref={singInFormElement}
+      onSubmit={(event) => {
+        handleSubmit(event);
       }}
     >
       <input {...getActionProps(actions.singIn)} />
@@ -58,43 +67,48 @@ export function SingInForm() {
       </fieldset>
       <div class="grid gap-4">
         <fieldset class="grid gap-2">
-          <label for="email">Email</label>
-          <form.Field
+          <TextField
+            autocomplete="off"
+            error={singInForm.error}
+            id="email"
+            isValid={singInForm.isValid}
+            label="Email"
             name="email"
-            children={(field) => (
-              <input
-                autocomplete="off"
-                class="input input-bordered w-full"
-                id="email"
-                name={field().name}
-                onBlur={field().handleBlur}
-                onInput={(e) => field().handleChange(e.target.value)}
-                placeholder="m@example.com"
-                required
-                type="email"
-                value={field().state.value}
-              />
-            )}
+            pattern="[^@\s]+@[^@\s]+\.[^@\s]+"
+            placeholder="m@example.com"
+            required
+            type="email"
+            validations={[
+              {
+                error: "The email address is badly formatted.",
+                validationType: "patternMismatch",
+              },
+            ]}
           />
+          {fieldErrors.email && (
+            <p class="text-error text-sm">{fieldErrors.email}</p>
+          )}
         </fieldset>
         <fieldset class="grid gap-2">
-          <label for="password">Password</label>
-          <input
+          <TextField
+            error={singInForm.error}
             id="password"
-            type="password"
+            isValid={singInForm.isValid}
+            label="Password"
+            maxlength={16}
+            minlength={8}
             name="password"
-            placeholder="*********"
-            class="input input-bordered w-full"
+            placeholder="**********"
             required
-            onBlur={handleBlur}
+            type="password"
           />
-          {/* {fieldError.password && (
-          <p class="text-error text-sm">{fieldError.password}</p>
-        )} */}
+          {fieldErrors.password && (
+            <p class="text-error text-sm">{fieldErrors.password}</p>
+          )}
         </fieldset>
-        <button type="submit" class="btn btn-primary w-full">
-          Login
-        </button>
+        <Show when={singInForm.isSubmitting} fallback={<SubmitButton />}>
+          <SubmittingButton />
+        </Show>
         <div class="mt-4 text-center text-sm">
           <a
             href="/forgot-password"
@@ -113,7 +127,7 @@ function SubmitButton() {
     <button
       type="submit"
       class="btn btn-primary w-full"
-      // disabled={singInForm.invalid || singInForm.submitting}
+      // disabled={!singInForm.checkValidity || singInForm.isSubmitting}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -138,7 +152,7 @@ function SubmitButton() {
 
 const SubmittingButton = () => {
   return (
-    <button>
+    <button class="btn btn-primary w-full">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"

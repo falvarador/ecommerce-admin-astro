@@ -1,4 +1,4 @@
-import { defineAction, z } from "astro:actions";
+import { defineAction, z } from "astro/actions/runtime/virtual/server.js";
 
 export const server = {
   singIn: defineAction({
